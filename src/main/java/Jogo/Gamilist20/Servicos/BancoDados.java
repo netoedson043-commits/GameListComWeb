@@ -4,18 +4,14 @@ import Jogo.Gamilist20.Modelo.Desenvolvedora;
 import Jogo.Gamilist20.Modelo.JsonAlias.JogoRawg;
 import Jogo.Gamilist20.Modelo.JogosFavoritos;
 import Jogo.Gamilist20.Modelo.StatusJogo;
-import Jogo.Gamilist20.Servicos.Menus.Menus;
 import Jogo.Gamilist20.repository.JogosFavoritosRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
-import java.util.Optional;
-import java.util.Scanner;
 
 @Component
 public class BancoDados {
-
-    private Menus menus = new Menus();
 
     @Autowired
     private BancodadosDev bancodadosDev;
@@ -23,97 +19,64 @@ public class BancoDados {
     @Autowired
     private JogosFavoritosRepository jogosRepositorio;
 
-    public void salvarFavoritos(JogoRawg jogoRawg) {
-       if (jogosRepositorio.existsByNome(jogoRawg.nome())) {
-           System.out.println("Jogo ja esta na lista de favoritos");
-       } else {
-           JogosFavoritos favoritos = new JogosFavoritos(jogoRawg);
-
-           Desenvolvedora dev = bancodadosDev.buscarOuCriarDev(favoritos.getDesenvolvedor());
-           favoritos.setDesenvolvedor(dev);
-
-           StatusJogo statusJogo = perguntarStatus();
-           favoritos.setStatusJogo(statusJogo);
-
-
-           jogosRepositorio.save(favoritos);
-           System.out.println("jogo salvo");
-
-       }
-    }
-    public void removerFavorito() {
-        Scanner scanner = new Scanner(System.in);
-
-        boolean temFavorito = listaFavoritos();
-        if (!temFavorito) {
-            return;
+    public JogosFavoritos salvarFavoritos(
+            JogoRawg jogoRawg,
+            StatusJogo status
+    ) {
+        if (jogoRawg == null) {
+            throw new IllegalArgumentException("Informe um jogo");
         }
 
-
-        System.out.println("qual id do jogo que deseja tirar dos favoritos(ID)");
-        long jogoRemove = scanner.nextLong();
-
-        Optional<JogosFavoritos> jogo = jogosRepositorio.findById(jogoRemove);
-        if (jogo.isEmpty()) {
-            System.out.println("Id invalido ou nao esta nos favoritos");
-        } else {
-            jogosRepositorio.delete(jogo.get());
-            System.out.println("removido com sucesso");
+        if (status == null) {
+            throw new IllegalArgumentException("Informe o status do jogo");
         }
 
+        if (jogosRepositorio.existsByNome(jogoRawg.nome())) {
+            throw new IllegalArgumentException(
+                    "Jogo já está na lista de favoritos"
+            );
+        }
 
+        JogosFavoritos favorito = new JogosFavoritos(jogoRawg);
+
+        Desenvolvedora dev = bancodadosDev.buscarOuCriarDev(
+                favorito.getDesenvolvedor()
+        );
+
+        favorito.setDesenvolvedor(dev);
+        favorito.setStatusJogo(status);
+
+        return jogosRepositorio.save(favorito);
     }
 
-    public boolean listaFavoritos() {
-        List<JogosFavoritos> favoritos = jogosRepositorio.findAll();
+    public void removerFavorito(Long id) {
+        JogosFavoritos jogo = jogosRepositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Jogo não encontrado nos favoritos"
+                ));
 
-        if (favoritos.isEmpty()) {
-            System.out.println("nenhum jogo nos favoritos");
-            return false;
-        } else {
-            System.out.println("Lista de jogos Favoritos");
-            for (JogosFavoritos favorito : favoritos) {
-                System.out.println(favorito.getId() + " - " + favorito.getNome() + " - " + favorito.getStatusJogo());
-            }
-            return true;
-        }
+        jogosRepositorio.delete(jogo);
     }
 
-    public void redefinirStatus() {
-        Scanner scanner = new Scanner(System.in);
-        boolean temFavorito = listaFavoritos();
-        if (!temFavorito) {
-            return;
-        }
-
-        System.out.println("Qual jogo deseja redefinir(ID)");
-        long jogoescolhido = scanner.nextLong();
-        Optional<JogosFavoritos> jogo = jogosRepositorio.findById(jogoescolhido);
-
-        if (jogo.isEmpty()) {
-            System.out.println("Id invalido");
-            return;
-        }
-        StatusJogo statusJogo = perguntarStatus();
-        JogosFavoritos jogoFavorito = jogo.get();
-        jogoFavorito.setStatusJogo(statusJogo);
-        jogosRepositorio.save(jogoFavorito);
-
-        System.out.println("Atualizado com sucesso");
-
+    public List<JogosFavoritos> listaFavoritos() {
+        return jogosRepositorio.findAll();
     }
 
-    public StatusJogo perguntarStatus() {
-        Scanner scanner = new Scanner(System.in);
-        menus.menuStatus();
-        String escolha = scanner.nextLine();
+    public JogosFavoritos redefinirStatus(
+            Long id,
+            StatusJogo status
+    ) {
+        if (status == null) {
+            throw new IllegalArgumentException("Informe o status do jogo");
+        }
 
-        return switch (escolha) {
-            case "1" -> StatusJogo.VOU_JOGAR;
-            case "2" -> StatusJogo.JOGANDO;
-            case "3" -> StatusJogo.CONCLUIDO;
-            default -> StatusJogo.SEM_INFORMACOES;
+        JogosFavoritos jogo = jogosRepositorio.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Jogo não encontrado nos favoritos"
+                ));
 
-        };
+        jogo.setStatusJogo(status);
+
+        return jogosRepositorio.save(jogo);
     }
 }

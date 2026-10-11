@@ -13,7 +13,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 @Component
 public class BuscarJogos {
@@ -21,59 +20,87 @@ public class BuscarJogos {
     @Value("${rawg.api.key}")
     private String apiKey;
 
-    public JogoRawg procurarJogo() {
-        Scanner scanner = new Scanner(System.in);
-        RawgApiClientHttp jogoProcurado = new RawgApiClientHttp();
+    public List<JogoRawg> buscarJogos(String nome) {
+        if (nome == null || nome.isBlank()) {
+            throw new IllegalArgumentException(
+                    "Informe o nome do jogo"
+            );
+        }
 
-        System.out.println("nome do jogo");
-        String buscarJogo = scanner.nextLine();
-        String buscarTransformada = URLEncoder.encode(buscarJogo, StandardCharsets.UTF_8);
-        String endereco = "https://api.rawg.io/api/games?key=" + apiKey + "&search=" + buscarTransformada;
-
-        var resultado = jogoProcurado.obterDados(endereco);
+        RawgApiClientHttp cliente = new RawgApiClientHttp();
         ObjectMapper jackson = new ObjectMapper();
-        List<JogoRawg> listaJogos = new ArrayList<>();
+
+        String nomeCodificado = URLEncoder.encode(
+                nome.trim(),
+                StandardCharsets.UTF_8
+        );
+
+        String endereco = "https://api.rawg.io/api/games?key="
+                + apiKey
+                + "&search="
+                + nomeCodificado;
+
+        String resultado = cliente.obterDados(endereco);
+        List<JogoRawg> jogos = new ArrayList<>();
 
         try {
             JsonNode raiz = jackson.readTree(resultado);
             JsonNode results = raiz.get("results");
 
-            if (results == null || results.isEmpty()) {
-                System.out.println("Nenhum jogo encontrado");
-                return null;
+            if (results == null || !results.isArray()) {
+                throw new RuntimeException(
+                        "A API retornou uma resposta de busca inválida"
+                );
             }
 
             for (JsonNode item : results) {
-                JogoRawg jogo = jackson.treeToValue(item, JogoRawg.class);
-                listaJogos.add(jogo);
+                JogoRawg jogo = jackson.treeToValue(
+                        item,
+                        JogoRawg.class
+                );
+
+                jogos.add(jogo);
             }
+
+            return jogos;
+
         } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(
+                    "Erro ao interpretar os resultados da busca",
+                    e
+            );
+        }
+    }
+
+
+    public JogoRawg buscarPorId(Long id) {
+        if (id == null || id <= 0) {
+            throw new IllegalArgumentException(
+                    "Informe um ID de jogo válido"
+            );
         }
 
-        System.out.println("Resultados encontrados:");
-        for (int i = 0; i < listaJogos.size(); i++) {
-            System.out.println((i + 1) + " - " + listaJogos.get(i).nome() + " (" + listaJogos.get(i).ano() + ")");
-        }
+        RawgApiClientHttp cliente = new RawgApiClientHttp();
+        ObjectMapper jackson = new ObjectMapper();
 
+        String endereco = "https://api.rawg.io/api/games/"
+                + id
+                + "?key="
+                + apiKey;
 
+        String resultado = cliente.obterDados(endereco);
 
-        System.out.println("Escolha o numero do jogo:");
-        int escolha = scanner.nextInt();
-        scanner.nextLine();
-
-        JogoRawg escolhido = listaJogos.get(escolha - 1);
-        String enderecoDetalhe = "https://api.rawg.io/api/games/" + escolhido.id() + "?key=" + apiKey;
-        var resultadoDetalhe = jogoProcurado.obterDados(enderecoDetalhe);
-
-        JogoRawg jogoCompleto;
         try {
-            jogoCompleto = jackson.readValue(resultadoDetalhe, JogoRawg.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+            return jackson.readValue(
+                    resultado,
+                    JogoRawg.class
+            );
 
-        System.out.println(jogoCompleto);
-        return jogoCompleto;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(
+                    "Erro ao interpretar os detalhes do jogo",
+                    e
+            );
+        }
     }
 }

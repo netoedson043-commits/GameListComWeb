@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GameList</title>
+<link rel="stylesheet" href="css/principal.css">
+</head>
+<body>
+
+<h1>🎮 GameList</h1>
+<p class="subtitle">Sua lista de jogos favoritos</p>
+
+<nav>
+  <button data-painel="buscar" class="active">Buscar jogos</button>
+  <button data-painel="favoritos">Favoritos</button>
+  <button data-painel="devs">Desenvolvedoras</button>
+</nav>
+
+<div id="mensagem"></div>
+
+<!-- BUSCAR -->
+<section id="painel-buscar" class="painel active">
+  <form class="busca" id="formBusca">
+    <input type="text" id="inputBusca" placeholder="Nome do jogo..." required>
+    <button type="submit" class="primario">Buscar</button>
+  </form>
+  <ul class="lista" id="listaBusca"></ul>
+</section>
+
+<!-- FAVORITOS -->
+<section id="painel-favoritos" class="painel">
+  <ul class="lista" id="listaFavoritos"></ul>
+</section>
+
+<!-- DESENVOLVEDORAS -->
+<section id="painel-devs" class="painel">
+  <ul class="lista" id="listaDevs"></ul>
+  <h3 style="font-size:14px;margin-top:24px;">Jogos da desenvolvedora selecionada</h3>
+  <ul class="lista" id="listaJogosDev"></ul>
+</section>
+
+<script src="js/principal.js"></script>
+</body>
+</html>

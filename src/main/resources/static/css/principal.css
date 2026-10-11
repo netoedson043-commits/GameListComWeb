@@ -1,0 +1,84 @@
+* { box-sizing: border-box; }
+
+body {
+  background: #ffffff;
+  color: #222;
+  font-family: Arial, Helvetica, sans-serif;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 16px 60px;
+}
+
+h1 { font-size: 22px; margin-bottom: 4px; }
+p.subtitle { color: #666; margin-top: 0; font-size: 14px; }
+
+nav { display: flex; gap: 8px; border-bottom: 1px solid #ddd; margin-bottom: 20px; }
+nav button {
+  background: none;
+  border: none;
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #666;
+  border-bottom: 2px solid transparent;
+}
+nav button.active { color: #000; border-bottom: 2px solid #000; font-weight: bold; }
+
+.painel { display: none; }
+.painel.active { display: block; }
+
+form.busca { display: flex; gap: 8px; margin-bottom: 20px; }
+input[type=text] {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+button {
+  border: 1px solid #ccc;
+  background: #fafafa;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+}
+button:hover { background: #f0f0f0; }
+button.primario { background: #111; color: #fff; border-color: #111; }
+button.primario:hover { background: #333; }
+button.perigo { color: #b00020; border-color: #e0b0b0; }
+
+ul.lista { list-style: none; padding: 0; margin: 0; }
+li.item {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+li.item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.info { flex: 1; min-width: 0; }
+.info .nome { font-weight: bold; font-size: 14px; }
+.info .detalhe { font-size: 12px; color: #777; }
+.acoes { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+
+select {
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+.vazio { color: #999; font-size: 14px; padding: 20px 0; text-align: center; }
+.mensagem { font-size: 13px; margin: 10px 0; padding: 8px 10px; border-radius: 4px; }
+.mensagem.ok { background: #eafbea; color: #157a15; }
+.mensagem.erro { background: #fdecec; color: #b00020; }
